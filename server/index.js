@@ -2,6 +2,11 @@
 
 const express = require('express');
 const morgan = require('morgan');
+const bodyParser = require('body-parser');
+
+const dbService = require('./services/db.service');
+dbService.connect();
+process.on('exit', dbService.close);
 
 // init express
 const app = new express();
@@ -9,12 +14,13 @@ const port = 3001;
 
 // use morgan for logging
 app.use(morgan('dev'));
+// use body-parser middleware
+app.use(bodyParser.json());
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+// setup routes
+app.use('/api/tickets', require('./routes/tickets'));
 
 // activate the server
 app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
+    console.log(`Server listening at http://localhost:${port}`);
 });
