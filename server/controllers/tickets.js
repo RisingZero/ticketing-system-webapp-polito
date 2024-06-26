@@ -81,7 +81,7 @@ class TicketsController {
      * GET /api/tickets/:ticketId
      * Get a ticket by ID
      */
-    #getTicketValidator = [param('ticketId').isInt()];
+    #getTicketValidator = [param('ticketId').isInt({min: 1})];
     async getTicket(req, res) {
         //TODO: authenticate [user]
         try {
@@ -106,7 +106,7 @@ class TicketsController {
      * GET /api/tickets/:ticketId/comments
      * Get comments for a ticket
      */
-    #getCommentsValidator = [param('ticketId').isInt()];
+    #getCommentsValidator = [param('ticketId').isInt({min: 1})];
     async getComments(req, res) {
         //TODO: authenticate [user]
         try {
@@ -133,7 +133,7 @@ class TicketsController {
      * Create a new comment for a ticket
      */
     #createCommentValidator = [
-        param('ticketId').isInt(),
+        param('ticketId').isInt({min: 1}),
         body('content').isString().isLength({ min: 1, max: 1000 }).escape(),
     ];
     async createComment(req, res) {
@@ -178,7 +178,7 @@ class TicketsController {
      * Update the status of a ticket
      */
     #updateTicketStatusValidator = [
-        param('ticketId').isInt(),
+        param('ticketId').isInt({min: 1}),
         body('value').isString().isIn(Object.values(Ticket.Status)),
     ];
     async updateTicketStatus(req, res) {
@@ -216,7 +216,7 @@ class TicketsController {
      * Update the category of a ticket
      */
     #updateTicketCategoryValidator = [
-        param('ticketId').isInt(),
+        param('ticketId').isInt({min: 1}),
         body('value').isString().isIn(Object.values(Ticket.Category)),
     ];
     async updateTicketCategory(req, res) {
