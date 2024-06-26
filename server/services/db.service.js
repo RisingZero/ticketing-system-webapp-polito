@@ -2,32 +2,79 @@
 
 const sqlite = require('sqlite3');
 
-class DBService {
-    connected = false;
-    db = null;
+class DbService {
+    #connected = false;
+    #db = null;
+    #inTransaction = false;
 
-    constructor() {
-        this.connect = this.connect.bind(this);
-        this.close = this.close.bind(this);
-    }
+    static ERROR_CODES = {
+        BUSY: 'SQLITE_BUSY',
+    };
 
-    get context() {
-        if (!this.connected) this.connect();
-        return this.db;
+    constructor() {}
+
+    get db() {
+        return this.#db;
     }
 
     connect() {
-        this.db = new sqlite.Database('db.sqlite', (err) => {
-            if (err) {
-                console.log(`ERROR CONNECTING TO DB: ${err}`);
-                process.exit(1);
-            } else this.connected = true;
+        return new Promise((resolve, reject) => {
+            if (this.#connected) {
+                resolve();
+            } else {
+                this.#db = new sqlite.Database('db.sqlite', (err) => {
+                    if (err) {
+                        console.log(`ERROR CONNECTING TO DB: ${err}`);
+                        reject(err);
+                    } else {
+                        this.#connected = true;
+                        resolve();
+                    }
+                });
+                this.#db.configure('busyTimeout', 3000);
+            }
         });
     }
 
     close() {
-        if (this.connected && this.db) this.db.close();
+        return new Promise((resolve, reject) => {
+            // Rollback any open transactions
+            if (this.#inTransaction) this.#db.run('ROLLBACK');
+            // Close the database connection
+            if (this.#connected && this.#db) this.#db.close();
+            resolve();
+        });
+    }
+
+    beginTransaction() {
+        return new Promise((resolve, reject) => {
+            if (!this.#connected) reject(new Error('Database not connected'));
+            if (this.#inTransaction) reject(new Error('Transaction already in progress'));
+            this.#db.run('BEGIN TRANSACTION');
+            this.#inTransaction = true;
+            resolve();
+        });
+    }
+
+    commit() {
+        return new Promise((resolve, reject) => {
+            if (!this.#connected) reject(new Error('Database not connected'));
+            if (!this.#inTransaction) reject(new Error('No transaction in progress'));
+            this.#db.run('COMMIT');
+            this.#inTransaction = false;
+            resolve();
+        });
+    }
+
+    rollback() {
+        return new Promise((resolve, reject) => {
+            if (!this.#connected) reject(new Error('Database not connected'));
+            if (!this.#inTransaction) reject(new Error('No transaction in progress'));
+            this.#db.run('ROLLBACK');
+            this.#inTransaction = false;
+            resolve();
+        });
     }
 }
 
-module.exports = new DBService();
+module.exports = DbService;

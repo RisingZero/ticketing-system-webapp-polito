@@ -4,10 +4,6 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 
-const dbService = require('./services/db.service');
-dbService.connect();
-process.on('exit', dbService.close);
-
 // init express
 const app = new express();
 const port = 3001;
