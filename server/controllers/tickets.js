@@ -1,195 +1,254 @@
 'use strict';
 
+const DbService = require('../services/db.service');
 const Ticket = require('../models/tickets');
+
+const { body, param } = require('express-validator');
+const { getTimestamp } = require('../utils');
 
 class TicketsController {
     constructor() {
-        this.getTickets = this.getTickets.bind(this);
-        this.createTicket = this.createTicket.bind(this);
-        this.getTicket = this.getTicket.bind(this);
-        this.getComments = this.getComments.bind(this);
-        this.createComment = this.createComment.bind(this);
-        this.updateTicketStatus = this.updateTicketStatus.bind(this);
-        this.updateTicketCategory = this.updateTicketCategory.bind(this);
+        this.getTickets.validator = this.#getTicketsValidator;
+        this.createTicket.validator = this.#createTicketValidator;
+        this.getTicket.validator = this.#getTicketValidator;
+        this.getComments.validator = this.#getCommentsValidator;
+        this.createComment.validator = this.#createCommentValidator;
+        this.updateTicketStatus.validator = this.#updateTicketStatusValidator;
+        this.updateTicketCategory.validator =
+            this.#updateTicketCategoryValidator;
     }
 
     /**
      * GET /api/tickets
      * Get all tickets
      */
-    getTickets = function (req, res) {
-        Ticket.selectAll()
-            .then((result) => {
-                res.json(result);
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).send('An error occurred');
-            });
-    };
+    #getTicketsValidator = [];
+    async getTickets(req, res) {
+        try {
+            const ticketList = await Ticket.selectAll(req.dbContext);
+            res.json(ticketList);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: 'An error occurred' });
+        } finally {
+            await req.dbContext.close();
+        }
+    }
 
     /**
      * POST /api/tickets
      * Create a new ticket
      */
-    createTicket = function (req, res) {
+    #createTicketValidator = [
+        body('category').isString().isIn(Object.values(Ticket.Category)),
+        body('title').isString().isLength({ min: 1, max: 100 }).escape(),
+        body('description').isString().isLength({ min: 1, max: 1000 }).escape(),
+    ];
+    async createTicket(req, res) {
         //TODO: authenticate [user]
-        //TODO: validate category, title, description
         const ticket = new Ticket(
             -1,
             1,
             null,
-            Math.floor(Date.now() / 1000),
+            getTimestamp(),
             Ticket.Status.OPEN,
             req.body.category,
             req.body.title,
-            req.body.description
+            req.body.description,
+            req.dbContext
         );
-        ticket
-            .insert()
-            .then(() => {
-                res.json({ message: 'Ticket created' });
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).send('An error occurred');
-            });
-    };
+
+        try {
+            await ticket.insert();
+            res.status(201)
+                .header('Location', `/api/tickets/${ticket.id}`)
+                .json(ticket);
+        } catch (err) {
+            console.error(err);
+            if (err.code === DbService.ERROR_CODES.BUSY) {
+                res.status(503)
+                    .header('Retry-After', 3)
+                    .json({ message: 'Busy, try again later' });
+            } else {
+                res.status(500).json({ message: 'An error occurred' });
+            }
+        } finally {
+            await req.dbContext.close();
+        }
+    }
 
     /**
      * GET /api/tickets/:ticketId
      * Get a ticket by ID
      */
-    getTicket = function (req, res) {
+    #getTicketValidator = [param('ticketId').isNumeric()];
+    async getTicket(req, res) {
         //TODO: authenticate [user]
-        //TODO: validate ticketId
-        Ticket.selectById(req.params.ticketId)
-            .then((result) => {
-                if (result) {
-                    res.json(result);
-                } else {
-                    res.status(404).send('Ticket not found');
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).send('An error occurred');
-            });
-    };
+        try {
+            const ticket = await Ticket.selectById(
+                req.params.ticketId,
+                req.dbContext
+            );
+            if (!ticket) {
+                res.status(404).json({ message: 'Ticket not found' });
+                return;
+            }
+            res.json(ticket);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: 'An error occurred' });
+        } finally {
+            await req.dbContext.close();
+        }
+    }
 
     /**
      * GET /api/tickets/:ticketId/comments
      * Get comments for a ticket
      */
-    getComments = function (req, res) {
+    #getCommentsValidator = [param('ticketId').isNumeric()];
+    async getComments(req, res) {
         //TODO: authenticate [user]
-        //TODO: validate ticketId
-        Ticket.selectById(req.params.ticketId)
-            .then((result) => {
-                if (result) {
-                    return result.getComments();
-                } else {
-                    res.status(404).send('Ticket not found');
-                }
-            })
-            .then((comments) => {
-                res.json(comments);
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).send('An error occurred');
-            });
-    };
+        try {
+            const ticket = await Ticket.selectById(
+                req.params.ticketId,
+                req.dbContext
+            );
+            if (!ticket) {
+                res.status(404).json({ message: 'Ticket not found' });
+                return;
+            }
+            const comments = await ticket.getComments();
+            res.json(comments);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: 'An error occurred' });
+        } finally {
+            await req.dbContext.close();
+        }
+    }
 
     /**
      * POST /api/tickets/:ticketId/comments
      * Create a new comment for a ticket
      */
-    createComment = function (req, res) {
+    #createCommentValidator = [
+        param('ticketId').isNumeric(),
+        body('content').isString().isLength({ min: 1, max: 1000 }).escape(),
+    ];
+    async createComment(req, res) {
         //TODO: authenticate [user]
-        //TODO: validate ticketId, content
-        Ticket.selectById(req.params.ticketId)
-            .then((result) => {
-                if (result) {
-                    return result;
-                } else {
-                    res.status(404).send('Ticket not found');
-                }
-            })
-            .then((ticket) => {
-                return ticket.addComment(
-                    1,
-                    Math.floor(Date.now() / 1000),
-                    req.body.content
-                );
-            })
-            .then(() => {
-                res.json({ message: 'Comment added to ticket' });
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).send('An error occurred');
-            });
-    };
+        try {
+            await req.dbContext.beginTransaction();
+            const ticket = await Ticket.selectById(
+                req.params.ticketId,
+                req.dbContext
+            );
+            if (!ticket) {
+                res.status(404).json({ message: 'Ticket not found' });
+                return;
+            }
+            if (ticket.status === Ticket.Status.CLOSED) {
+                res.status(409).json({
+                    message: 'Cannot add comment to closed ticket',
+                });
+                return;
+            }
+            await ticket.addComment(1, getTimestamp(), req.body.content);
+            await req.dbContext.commit();
+            res.status(201)
+                .header('Location', `/api/tickets/${ticket.id}/comments`)
+                .json({ message: 'Comment added to ticket' });
+        } catch (err) {
+            console.error(err);
+            if (err.code === DbService.ERROR_CODES.BUSY) {
+                res.status(503)
+                    .header('Retry-After', 3)
+                    .json({ message: 'Busy, try again later' });
+            } else {
+                res.status(500).json({ message: 'An error occurred' });
+            }
+        } finally {
+            await req.dbContext.close();
+        }
+    }
 
     /**
      * PUT /api/tickets/:ticketId/status
      * Update the status of a ticket
      */
-    updateTicketStatus = function (req, res) {
+    #updateTicketStatusValidator = [
+        param('ticketId').isNumeric(),
+        body('value').isString().isIn(Object.values(Ticket.Status)),
+    ];
+    async updateTicketStatus(req, res) {
         //TODO: authenticate [admin|owner]
-        //TODO: validate ticketId, value
-        Ticket.selectById(req.params.ticketId)
-            .then((result) => {
-                if (result) {
-                    return result;
-                } else {
-                    res.status(404).send('Ticket not found');
-                }
-            })
-            .then((ticket) => {
-                ticket.status = req.body.value;
-                return ticket.update();
-            })
-            .then((ticket) => {
-                res.json({ message: 'Ticket status updated', ticket: ticket });
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).send('An error occurred');
-            });
-    };
+        try {
+            await req.dbContext.beginTransaction();
+            const ticket = await Ticket.selectById(
+                req.params.ticketId,
+                req.dbContext
+            );
+            if (!ticket) {
+                res.status(404).json({ message: 'Ticket not found' });
+                return;
+            }
+            ticket.status = req.body.value;
+            await ticket.update();
+            await req.dbContext.commit();
+            res.json({ message: 'Ticket status updated', ticket: ticket });
+        } catch (err) {
+            console.error(err);
+            if (err.code === DbService.ERROR_CODES.BUSY) {
+                res.status(503)
+                    .header('Retry-After', 3)
+                    .json({ message: 'Busy, try again later' });
+            } else {
+                res.status(500).json({ message: 'An error occurred' });
+            }
+        } finally {
+            await req.dbContext.close();
+        }
+    }
 
     /**
      * PUT /api/tickets/:ticketId/category
      * Update the category of a ticket
      */
-    updateTicketCategory = function (req, res) {
+    #updateTicketCategoryValidator = [
+        param('ticketId').isNumeric(),
+        body('value').isString().isIn(Object.values(Ticket.Category)),
+    ];
+    async updateTicketCategory(req, res) {
         //TODO: authenticate [admin]
-        //TODO: validate ticketId, value
-        Ticket.selectById(req.params.ticketId)
-            .then((result) => {
-                if (result) {
-                    return result;
-                } else {
-                    res.status(404).send('Ticket not found');
-                }
-            })
-            .then((ticket) => {
-                ticket.category = req.body.value;
-                return ticket.update();
-            })
-            .then((ticket) => {
-                res.json({
-                    message: 'Ticket category updated',
-                    ticket: ticket,
-                });
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).send('An error occurred');
-            });
-    };
+        try {
+            await req.dbContext.beginTransaction();
+            const ticket = await Ticket.selectById(
+                req.params.ticketId,
+                req.dbContext
+            );
+            if (!ticket) {
+                res.status(404).json({ message: 'Ticket not found' });
+                return;
+            }
+            ticket.category = req.body.value;
+            await ticket.update();
+            await req.dbContext.commit();
+            res.json({ message: 'Ticket category updated', ticket: ticket });
+        } catch (err) {
+            console.error(err);
+            if (err.code === DbService.ERROR_CODES.BUSY) {
+                res.status(503)
+                    .header('Retry-After', 3)
+                    .json({ message: 'Busy, try again later' });
+            } else {
+                res.status(500).json({ message: 'An error occurred' });
+            }
+        } finally {
+            await req.dbContext.close();
+        }
+    }
 }
 
+// Export singleton instance
 module.exports = new TicketsController();

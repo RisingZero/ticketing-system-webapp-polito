@@ -1,6 +1,6 @@
 'use strict';
 
-const db = require('../services/db.service');
+const DbService = require('../services/db.service');
 
 class Ticket {
     id = -1;
@@ -11,6 +11,7 @@ class Ticket {
     category = null;
     title = null;
     description = null;
+    #dbContext = null;
 
     static Category = {
         INQUIRY: 'inquiry',
@@ -25,16 +26,7 @@ class Ticket {
         CLOSED: 'closed',
     };
 
-    constructor(
-        id,
-        ownerId,
-        ownerUsername,
-        createdAt,
-        status,
-        category,
-        title,
-        description
-    ) {
+    constructor(id, ownerId, ownerUsername, createdAt, status, category, title, description, dbContext = null) {
         this.id = id;
         this.ownerId = ownerId;
         this.ownerUsername = ownerUsername;
@@ -43,9 +35,11 @@ class Ticket {
         this.category = category;
         this.title = title;
         this.description = description;
+        this.#dbContext = dbContext;
     }
 
-    getComments() {
+    getComments(dbContext = null) {
+        dbContext = dbContext || this.#dbContext;
         const query = `
             SELECT
                 c.id,
@@ -58,7 +52,11 @@ class Ticket {
             ORDER BY c.posted_at DESC`;
 
         return new Promise((resolve, reject) => {
-            db.context.all(query, [this.id], (err, result) => {
+            if (!dbContext) {
+                reject(new Error('Database not connected'));
+            }
+
+            dbContext.db.all(query, [this.id], (err, result) => {
                 if (err) {
                     reject(err);
                 }
@@ -75,52 +73,54 @@ class Ticket {
         });
     }
 
-    addComment(authorId, postedAt, content) {
+    addComment(authorId, postedAt, content, dbContext = null) {
+        dbContext = dbContext || this.#dbContext;
         const query = `
             INSERT INTO comments (ticket_id, author_id, posted_at, content)
             VALUES (?, ?, ?, ?);`;
 
         return new Promise((resolve, reject) => {
-            db.context.run(
-                query,
-                [this.id, authorId, postedAt, content],
-                (err) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    resolve();
+            if (!dbContext) {
+                reject(new Error('Database not connected'));
+            }
+
+            dbContext.db.run(query, [this.id, authorId, postedAt, content], (err) => {
+                if (err) {
+                    reject(err);
                 }
-            );
+                resolve();
+            });
         });
     }
 
-    insert() {
+    insert(dbContext = null) {
+        dbContext = dbContext || this.#dbContext;
         const query = `
             INSERT INTO tickets (owner_id, created_at, title, status, category, description)
             VALUES (?, ?, ?, ?, ?, ?);`;
 
         return new Promise((resolve, reject) => {
-            db.context.run(
+            if (!dbContext) {
+                reject(new Error('Database not connected'));
+            }
+
+            const self = this;
+            dbContext.db.run(
                 query,
-                [
-                    this.ownerId,
-                    this.createdAt,
-                    this.title,
-                    this.status,
-                    this.category,
-                    this.description,
-                ],
-                (err) => {
+                [this.ownerId, this.createdAt, this.title, this.status, this.category, this.description],
+                function (err) {
                     if (err) {
                         reject(err);
                     }
+                    self.id = this.lastID;
                     resolve();
                 }
             );
         });
     }
 
-    update() {
+    update(dbContext = null) {
+        dbContext = dbContext || this.#dbContext;
         const query = `
             UPDATE tickets
             SET
@@ -129,20 +129,20 @@ class Ticket {
             WHERE id = ?`;
 
         return new Promise((resolve, reject) => {
-            db.context.run(
-                query,
-                [this.status, this.category, this.id],
-                (err) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    resolve(this);
+            if (!dbContext) {
+                reject(new Error('Database not connected'));
+            }
+
+            dbContext.db.run(query, [this.status, this.category, this.id], (err) => {
+                if (err) {
+                    reject(err);
                 }
-            );
+                resolve(this);
+            });
         });
     }
 
-    static selectAll() {
+    static selectAll(dbContext) {
         const query = `
             SELECT
                 t.id,
@@ -157,7 +157,11 @@ class Ticket {
             ORDER BY t.created_at DESC`;
 
         return new Promise((resolve, reject) => {
-            db.context.all(query, (err, result) => {
+            if (!dbContext) {
+                reject(new Error('Database context is required'));
+            }
+
+            dbContext.db.all(query, (err, result) => {
                 if (err) {
                     reject(err);
                 }
@@ -172,7 +176,8 @@ class Ticket {
                                 row.status,
                                 row.category,
                                 row.title,
-                                null
+                                null,
+                                dbContext
                             )
                     )
                 );
@@ -180,7 +185,7 @@ class Ticket {
         });
     }
 
-    static selectById(id) {
+    static selectById(id, dbContext) {
         const query = `
             SELECT
                 t.id,
@@ -195,7 +200,11 @@ class Ticket {
             WHERE t.owner_id = u.id AND t.id = ?`;
 
         return new Promise((resolve, reject) => {
-            db.context.get(query, [id], (err, row) => {
+            if (!dbContext) {
+                reject(new Error('Database context is required'));
+            }
+
+            dbContext.db.get(query, [id], (err, row) => {
                 if (err) {
                     reject(err);
                 }
@@ -212,7 +221,8 @@ class Ticket {
                             row.status,
                             row.category,
                             row.title,
-                            row.description
+                            row.description,
+                            dbContext
                         )
                     );
                 }
