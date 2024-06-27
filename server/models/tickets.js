@@ -26,6 +26,9 @@ class Ticket {
         CLOSED: 'closed',
     };
 
+    static TITLE_MAX_LENGTH = 100;
+    static CONTENT_BLOCK_MAX_LENGTH = 1000;
+
     constructor(
         id,
         ownerId,

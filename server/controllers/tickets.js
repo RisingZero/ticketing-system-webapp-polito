@@ -40,9 +40,36 @@ class TicketsController {
      * Create a new ticket
      */
     #createTicketValidator = [
-        body('category').isString().isIn(Object.values(Ticket.Category)),
-        body('title').isString().isLength({ min: 1, max: 100 }).escape(),
-        body('description').isString().isLength({ min: 1, max: 1000 }).escape(),
+        body('category')
+            .isIn(Object.values(Ticket.Category))
+            .withMessage(
+                'Invalid category. Must be one of: ' +
+                    Object.values(Ticket.Category)
+            ),
+        body('title')
+            .not()
+            .isEmpty()
+            .withMessage('Title is required')
+            .trim()
+            .isLength({ max: Ticket.TITLE_MAX_LENGTH })
+            .withMessage(
+                'Title must be less than ' +
+                    Ticket.TITLE_MAX_LENGTH +
+                    ' characters'
+            )
+            .escape(),
+        body('description')
+            .not()
+            .isEmpty()
+            .withMessage('Description is required')
+            .trim()
+            .isLength({ min: 1, max: Ticket.CONTENT_BLOCK_MAX_LENGTH })
+            .withMessage(
+                'Description must be less than ' +
+                    Ticket.CONTENT_BLOCK_MAX_LENGTH +
+                    ' characters'
+            )
+            .escape(),
     ];
     async createTicket(req, res) {
         const ticket = new Ticket(
@@ -66,7 +93,7 @@ class TicketsController {
             console.error(err);
             if (err.code === DbService.ERROR_CODES.BUSY) {
                 res.status(503)
-                    .header('Retry-After', 3)
+                    .header('Retry-After', 1500)
                     .json({ message: 'Busy, try again later' });
             } else {
                 res.status(500).json({ message: 'An error occurred' });
@@ -80,7 +107,11 @@ class TicketsController {
      * GET /api/tickets/:ticketId
      * Get a ticket by ID
      */
-    #getTicketValidator = [param('ticketId').isInt({ min: 1 })];
+    #getTicketValidator = [
+        param('ticketId')
+            .isInt({ min: 1 })
+            .withMessage('Invalid ticket ID, must be a positive integer'),
+    ];
     async getTicket(req, res) {
         try {
             const ticket = await Ticket.selectById(
@@ -104,7 +135,11 @@ class TicketsController {
      * GET /api/tickets/:ticketId/comments
      * Get comments for a ticket
      */
-    #getCommentsValidator = [param('ticketId').isInt({ min: 1 })];
+    #getCommentsValidator = [
+        param('ticketId')
+            .isInt({ min: 1 })
+            .withMessage('Invalid ticket ID, must be a positive integer'),
+    ];
     async getComments(req, res) {
         try {
             const ticket = await Ticket.selectById(
@@ -130,8 +165,21 @@ class TicketsController {
      * Create a new comment for a ticket
      */
     #createCommentValidator = [
-        param('ticketId').isInt({ min: 1 }),
-        body('content').isString().isLength({ min: 1, max: 1000 }).escape(),
+        param('ticketId')
+            .isInt({ min: 1 })
+            .withMessage('Invalid ticket ID, must be a positive integer'),
+        body('content')
+            .not()
+            .isEmpty()
+            .withMessage('Content is required')
+            .trim()
+            .isLength({ min: 1, max: Ticket.CONTENT_BLOCK_MAX_LENGTH })
+            .withMessage(
+                'Content must be less than ' +
+                    Ticket.CONTENT_BLOCK_MAX_LENGTH +
+                    ' characters'
+            )
+            .escape(),
     ];
     async createComment(req, res) {
         try {
@@ -163,7 +211,7 @@ class TicketsController {
             console.error(err);
             if (err.code === DbService.ERROR_CODES.BUSY) {
                 res.status(503)
-                    .header('Retry-After', 3)
+                    .header('Retry-After', 1500)
                     .json({ message: 'Busy, try again later' });
             } else {
                 res.status(500).json({ message: 'An error occurred' });
@@ -178,8 +226,15 @@ class TicketsController {
      * Update the status of a ticket
      */
     #updateTicketStatusValidator = [
-        param('ticketId').isInt({ min: 1 }),
-        body('value').isString().isIn(Object.values(Ticket.Status)),
+        param('ticketId')
+            .isInt({ min: 1 })
+            .withMessage('Invalid ticket ID, must be a positive integer'),
+        body('value')
+            .isIn(Object.values(Ticket.Status))
+            .withMessage(
+                'Invalid status. Must be one of: ' +
+                    Object.values(Ticket.Status)
+            ),
     ];
     async updateTicketStatus(req, res) {
         try {
@@ -215,7 +270,7 @@ class TicketsController {
             console.error(err);
             if (err.code === DbService.ERROR_CODES.BUSY) {
                 res.status(503)
-                    .header('Retry-After', 3)
+                    .header('Retry-After', 1500)
                     .json({ message: 'Busy, try again later' });
             } else {
                 res.status(500).json({ message: 'An error occurred' });
@@ -230,8 +285,15 @@ class TicketsController {
      * Update the category of a ticket
      */
     #updateTicketCategoryValidator = [
-        param('ticketId').isInt({ min: 1 }),
-        body('value').isString().isIn(Object.values(Ticket.Category)),
+        param('ticketId')
+            .isInt({ min: 1 })
+            .withMessage('Invalid ticket ID, must be a positive integer'),
+        body('value')
+            .isIn(Object.values(Ticket.Category))
+            .withMessage(
+                'Invalid category. Must be one of: ' +
+                    Object.values(Ticket.Category)
+            ),
     ];
     async updateTicketCategory(req, res) {
         try {
@@ -252,7 +314,7 @@ class TicketsController {
             console.error(err);
             if (err.code === DbService.ERROR_CODES.BUSY) {
                 res.status(503)
-                    .header('Retry-After', 3)
+                    .header('Retry-After', 1500)
                     .json({ message: 'Busy, try again later' });
             } else {
                 res.status(500).json({ message: 'An error occurred' });
