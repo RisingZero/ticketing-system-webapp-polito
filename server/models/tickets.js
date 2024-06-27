@@ -26,7 +26,17 @@ class Ticket {
         CLOSED: 'closed',
     };
 
-    constructor(id, ownerId, ownerUsername, createdAt, status, category, title, description, dbContext = null) {
+    constructor(
+        id,
+        ownerId,
+        ownerUsername,
+        createdAt,
+        status,
+        category,
+        title,
+        description,
+        dbContext = null
+    ) {
         this.id = id;
         this.ownerId = ownerId;
         this.ownerUsername = ownerUsername;
@@ -49,7 +59,7 @@ class Ticket {
                 c.content
             FROM comments c, users u, tickets t
             WHERE c.author_id = u.id AND c.ticket_id = t.id AND t.id = ?
-            ORDER BY c.posted_at DESC`;
+            ORDER BY c.posted_at ASC`;
 
         return new Promise((resolve, reject) => {
             if (!dbContext) {
@@ -84,12 +94,16 @@ class Ticket {
                 reject(new Error('Database not connected'));
             }
 
-            dbContext.db.run(query, [this.id, authorId, postedAt, content], (err) => {
-                if (err) {
-                    reject(err);
+            dbContext.db.run(
+                query,
+                [this.id, authorId, postedAt, content],
+                (err) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve();
                 }
-                resolve();
-            });
+            );
         });
     }
 
@@ -107,7 +121,14 @@ class Ticket {
             const self = this;
             dbContext.db.run(
                 query,
-                [this.ownerId, this.createdAt, this.title, this.status, this.category, this.description],
+                [
+                    this.ownerId,
+                    this.createdAt,
+                    this.title,
+                    this.status,
+                    this.category,
+                    this.description,
+                ],
                 function (err) {
                     if (err) {
                         reject(err);
@@ -133,12 +154,16 @@ class Ticket {
                 reject(new Error('Database not connected'));
             }
 
-            dbContext.db.run(query, [this.status, this.category, this.id], (err) => {
-                if (err) {
-                    reject(err);
+            dbContext.db.run(
+                query,
+                [this.status, this.category, this.id],
+                (err) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve(this);
                 }
-                resolve(this);
-            });
+            );
         });
     }
 

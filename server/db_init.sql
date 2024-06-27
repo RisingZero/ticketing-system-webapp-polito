@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS comments;
 -- Create the users table
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
+    username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     is_admin INTEGER NOT NULL
 );
@@ -40,11 +40,11 @@ CREATE TABLE comments (
 
 -- Insert some initial data into the users table
 INSERT INTO users (username, password, is_admin) VALUES
-    ('admin1', 'admin1', 1),
-    ('admin2', 'admin2', 1),
-    ('user1', 'user1', 0),
-    ('user2', 'user2', 0),
-    ('user3', 'user3', 0);
+    ('admin1', 'c51da19530d6ae5f06b174998dad5856faa7ec2dc68041f7$5ddfb175202c523044b07be66f408900b80ff1fcf9e8ef59b8e12d15a96d3c4552553711066915e1515576be54f72e22bf7554fe8efa7c05dffc4642dfdd9b4e', 1),
+    ('admin2', 'bfa0c2fe57d0ce20814aa5ea385f3cee8d998af50a9ed886$327a667ce81c206ce0549d923748b219d2883b2cae6969373c7d67f29872dbc0d22f78631cf92d4bba90c8d6cdc01ca0cbdfaaaaa87ca00cbbe38852b5caddf7', 1),
+    ('user1', '5c4907b1177bc1d19d1557794bb57331065e96a608907650$68d38716d499fb21145bee772d03567c146019c0551c9f9c5e7ec7f4a9e2c2119df3c8a477f9bb455ac9492124ca2708365362cae7ad2e6c48339c8cf05ba580', 0),
+    ('user2', '5053b74dd47dff6445cde40aad23d66edb82137a569d5acb$89409b9f2d9491297dd89bba84b1302142c0a963101f9aeed5fb52b1849acf819f4e7295dfd8ed6f7c157359efcf51547bcb0ef42add1905945ba9ad88ae2e16', 0),
+    ('user3', '6d0e474df279a07bb37c44797cda731c6243e2b1fdd55bf8$f6082498b650211fea53aa9e7d06f6ddb85f04ff5fd5b059276131cc617c6051cfcbc8f739e197b403255bfb0a7f03ff55ef4e927e55b410e7570ef987aafbad', 0);
 
 -- Insert some initial data into the tickets table
 INSERT INTO tickets (owner_id, created_at, status, category, title, description) VALUES

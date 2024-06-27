@@ -1,20 +1,50 @@
 'use strict';
 
 const express = require('express');
+const cors = require('cors');
 const morgan = require('morgan');
-const bodyParser = require('body-parser');
 
 // init express
 const app = new express();
 const port = 3001;
-
-// use morgan for logging
 app.use(morgan('dev'));
-// use body-parser middleware
-app.use(bodyParser.json());
+app.use(express.json());
+
+// enable CORS
+app.use(
+    cors({
+        origin: '*',
+        methods: 'GET,POST,PUT,DELETE',
+        credentials: true,
+    })
+);
+
+// setup passport authentication
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const AuthService = require('./services/auth.service');
+passport.use(new LocalStrategy(AuthService.verify));
+passport.serializeUser(AuthService.serializeUser);
+passport.deserializeUser(AuthService.deserializeUser);
+
+// setup session
+const session = require('express-session');
+app.use(
+    session({
+        secret: 'secret',
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            httpOnly: true,
+            secure: app.get('env') === 'production' ? true : false,
+        },
+    })
+);
+app.use(passport.authenticate('session'));
 
 // setup routes
 app.use('/api/tickets', require('./routes/tickets'));
+app.use('/api/users', require('./routes/users'));
 
 // activate the server
 app.listen(port, () => {

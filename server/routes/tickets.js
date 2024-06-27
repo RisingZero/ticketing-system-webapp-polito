@@ -12,37 +12,44 @@ router.use(require('../middlewares/dbContext'));
 
 router.get(
     '/',
-    [...ticketsController.getTickets.validator, validationHandler],
+    ticketsController.getTickets.validator,
+    validationHandler,
     ticketsController.getTickets
 );
 router.post(
     '/',
-    [...ticketsController.createTicket.validator, validationHandler],
+    ticketsController.createTicket.validator,
+    validationHandler,
     ticketsController.createTicket
 );
 router.get(
     '/:ticketId',
-    [...ticketsController.getTicket.validator, validationHandler],
+    ticketsController.getTicket.validator,
+    validationHandler,
     ticketsController.getTicket
 );
 router.get(
     '/:ticketId/comments',
-    [...ticketsController.getComments.validator, validationHandler],
+    ticketsController.getComments.validator,
+    validationHandler,
     ticketsController.getComments
 );
 router.post(
     '/:ticketId/comments',
-    [...ticketsController.createComment.validator, validationHandler],
+    ticketsController.createComment.validator,
+    validationHandler,
     ticketsController.createComment
 );
 router.put(
     '/:ticketId/status',
-    [...ticketsController.updateTicketStatus.validator, validationHandler],
+    ticketsController.updateTicketStatus.validator,
+    validationHandler,
     ticketsController.updateTicketStatus
 );
 router.put(
     '/:ticketId/category',
-    [...ticketsController.updateTicketCategory.validator, validationHandler],
+    ticketsController.updateTicketCategory.validator,
+    validationHandler,
     ticketsController.updateTicketCategory
 );
 
