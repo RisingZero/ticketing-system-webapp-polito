@@ -47,7 +47,7 @@ class TicketsController {
     async createTicket(req, res) {
         const ticket = new Ticket(
             -1,
-            1,
+            req.user.id,
             null,
             getTimestamp(),
             Ticket.Status.OPEN,
