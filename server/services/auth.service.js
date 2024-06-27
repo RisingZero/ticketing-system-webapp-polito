@@ -7,8 +7,8 @@ class AuthService {
     constructor() {}
 
     static Roles = {
-        User: 'user',
-        Admin: 'admin',
+        USER: 'user',
+        ADMIN: 'admin',
     };
 
     static async verify(username, password, callback) {

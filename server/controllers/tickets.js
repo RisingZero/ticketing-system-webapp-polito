@@ -45,7 +45,6 @@ class TicketsController {
         body('description').isString().isLength({ min: 1, max: 1000 }).escape(),
     ];
     async createTicket(req, res) {
-        //TODO: authenticate [user]
         const ticket = new Ticket(
             -1,
             1,
@@ -81,9 +80,8 @@ class TicketsController {
      * GET /api/tickets/:ticketId
      * Get a ticket by ID
      */
-    #getTicketValidator = [param('ticketId').isInt({min: 1})];
+    #getTicketValidator = [param('ticketId').isInt({ min: 1 })];
     async getTicket(req, res) {
-        //TODO: authenticate [user]
         try {
             const ticket = await Ticket.selectById(
                 req.params.ticketId,
@@ -106,9 +104,8 @@ class TicketsController {
      * GET /api/tickets/:ticketId/comments
      * Get comments for a ticket
      */
-    #getCommentsValidator = [param('ticketId').isInt({min: 1})];
+    #getCommentsValidator = [param('ticketId').isInt({ min: 1 })];
     async getComments(req, res) {
-        //TODO: authenticate [user]
         try {
             const ticket = await Ticket.selectById(
                 req.params.ticketId,
@@ -133,11 +130,10 @@ class TicketsController {
      * Create a new comment for a ticket
      */
     #createCommentValidator = [
-        param('ticketId').isInt({min: 1}),
+        param('ticketId').isInt({ min: 1 }),
         body('content').isString().isLength({ min: 1, max: 1000 }).escape(),
     ];
     async createComment(req, res) {
-        //TODO: authenticate [user]
         try {
             await req.dbContext.beginTransaction();
             const ticket = await Ticket.selectById(
@@ -154,7 +150,11 @@ class TicketsController {
                 });
                 return;
             }
-            await ticket.addComment(1, getTimestamp(), req.body.content);
+            await ticket.addComment(
+                req.user.id,
+                getTimestamp(),
+                req.body.content
+            );
             await req.dbContext.commit();
             res.status(201)
                 .header('Location', `/api/tickets/${ticket.id}/comments`)
@@ -178,11 +178,10 @@ class TicketsController {
      * Update the status of a ticket
      */
     #updateTicketStatusValidator = [
-        param('ticketId').isInt({min: 1}),
+        param('ticketId').isInt({ min: 1 }),
         body('value').isString().isIn(Object.values(Ticket.Status)),
     ];
     async updateTicketStatus(req, res) {
-        //TODO: authenticate [admin|owner]
         try {
             await req.dbContext.beginTransaction();
             const ticket = await Ticket.selectById(
@@ -193,6 +192,21 @@ class TicketsController {
                 res.status(404).json({ message: 'Ticket not found' });
                 return;
             }
+
+            if (req.user.id !== ticket.userId && !req.user.isAdmin) {
+                // Only the ticket owner or admins can update the status
+                res.status(403).json({ message: 'Not authorized' });
+                return;
+            }
+
+            if (req.body.value === Ticket.Status.OPEN) {
+                if (!req.user.isAdmin) {
+                    // Only admins can reopen closed tickets
+                    res.status(403).json({ message: 'Not authorized' });
+                    return;
+                }
+            }
+
             ticket.status = req.body.value;
             await ticket.update();
             await req.dbContext.commit();
@@ -216,11 +230,10 @@ class TicketsController {
      * Update the category of a ticket
      */
     #updateTicketCategoryValidator = [
-        param('ticketId').isInt({min: 1}),
+        param('ticketId').isInt({ min: 1 }),
         body('value').isString().isIn(Object.values(Ticket.Category)),
     ];
     async updateTicketCategory(req, res) {
-        //TODO: authenticate [admin]
         try {
             await req.dbContext.beginTransaction();
             const ticket = await Ticket.selectById(
