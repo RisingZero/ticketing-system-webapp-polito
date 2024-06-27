@@ -1,3 +1,5 @@
+'use strict';
+
 const DbService = require('../services/db.service');
 
 const provideDbContext = async (req, res, next) => {

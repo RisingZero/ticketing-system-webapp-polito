@@ -1,3 +1,5 @@
+'use strict';
+
 const { validationResult } = require('express-validator');
 
 const errorFormatter = ({ location, msg, path }) => {

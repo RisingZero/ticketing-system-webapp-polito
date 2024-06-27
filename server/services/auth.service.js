@@ -6,6 +6,11 @@ const User = require('../models/users');
 class AuthService {
     constructor() {}
 
+    static Roles = {
+        User: 'user',
+        Admin: 'admin',
+    };
+
     static async verify(username, password, callback) {
         const dbContext = new DbService();
         try {
@@ -26,7 +31,7 @@ class AuthService {
             }
 
             // check password hash
-            if (!await user.verifyPassword(password)) {
+            if (!(await user.verifyPassword(password))) {
                 return callback(null, false, {
                     message: 'Invalid username or password',
                 });
