@@ -5,15 +5,15 @@ const crypto = require('crypto');
 class User {
     id = -1;
     username = null;
-    password = null;
-    isAdmin = false;
+    #password = null;
+    #isAdmin = false;
     #dbContext = null;
 
     constructor(id, username, password, is_admin, dbContext = null) {
         this.id = id;
         this.username = username;
-        this.password = password;
-        this.isAdmin = is_admin;
+        this.#password = password;
+        this.#isAdmin = is_admin;
         this.#dbContext = dbContext;
     }
 
@@ -21,7 +21,7 @@ class User {
         return new Promise((resolve, reject) => {
             crypto.scrypt(
                 checkPassword,
-                Buffer.from(this.password.split('$')[0], 'hex'),
+                Buffer.from(this.#password.split('$')[0], 'hex'),
                 64,
                 (err, hashedPassword) => {
                     if (err) {
@@ -30,7 +30,7 @@ class User {
 
                     if (
                         !crypto.timingSafeEqual(
-                            Buffer.from(this.password.split('$')[1], 'hex'),
+                            Buffer.from(this.#password.split('$')[1], 'hex'),
                             hashedPassword
                         )
                     ) {

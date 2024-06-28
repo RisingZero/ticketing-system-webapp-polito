@@ -1,5 +1,7 @@
 'use strict';
 
+const environment = require('./environment');
+
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -13,7 +15,7 @@ app.use(express.json());
 // enable CORS
 app.use(
     cors({
-        origin: '*',
+        origin: 'http://localhost:3000',
         methods: 'GET,POST,PUT,DELETE',
         credentials: true,
     })
@@ -31,7 +33,7 @@ passport.deserializeUser(AuthService.deserializeUser);
 const session = require('express-session');
 app.use(
     session({
-        secret: 'secret',
+        secret: environment.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
         cookie: {
