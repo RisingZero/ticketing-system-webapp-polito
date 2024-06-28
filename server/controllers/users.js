@@ -1,5 +1,7 @@
 'use strict';
 
+const environment = require('../environment');
+
 const DbService = require('../services/db.service');
 const User = require('../models/users');
 
@@ -7,6 +9,8 @@ const { body } = require('express-validator');
 const { getTimestamp } = require('../utils');
 
 const crypto = require('crypto');
+const jsonwebtoken = require('jsonwebtoken');
+const AuthService = require('../services/auth.service');
 
 class UsersController {
     constructor() {}
@@ -21,6 +25,32 @@ class UsersController {
             id: req.user.id,
             username: req.user.username,
         });
+    }
+
+    /**
+     * POST /api/users/logout
+     * Logout a user
+     */
+    async logout(req, res) {
+        req.logout(() => {
+            res.end();
+        });
+    }
+
+    /**
+     * GET /api/users/auth-token
+     * Get a JWT token for the current user
+     */
+    async getToken(req, res) {
+        const payload = {
+            userId: req.user.id,
+            username: req.user.username,
+            admin: req.user.isAdmin
+        };
+        const jwt = jsonwebtoken.sign(payload, environment.JWT_SECRET, {
+            expiresIn: environment.JWT_EXPIRY,
+        });
+        res.json({ token: jwt });
     }
 
     /**
