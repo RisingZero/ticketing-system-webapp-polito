@@ -248,7 +248,7 @@ class TicketsController {
                 return;
             }
 
-            if (req.user.id !== ticket.userId && !req.user.isAdmin) {
+            if (req.user.id !== ticket.ownerId && !req.user.isAdmin) {
                 // Only the ticket owner or admins can update the status
                 res.status(403).json({ message: 'Not authorized' });
                 return;
