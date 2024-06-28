@@ -6,14 +6,14 @@ class User {
     id = -1;
     username = null;
     #password = null;
-    #isAdmin = false;
+    isAdmin = false;
     #dbContext = null;
 
     constructor(id, username, password, is_admin, dbContext = null) {
         this.id = id;
         this.username = username;
         this.#password = password;
-        this.#isAdmin = is_admin;
+        this.isAdmin = is_admin;
         this.#dbContext = dbContext;
     }
 

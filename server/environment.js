@@ -3,7 +3,7 @@
 const env = {
     SESSION_SECRET: 'sessionsecret',
     JWT_SECRET: 'jwtsecret',
-    JWT_EXPIRY: 5 * 60,
+    JWT_EXPIRY: 2 * 60,
 };
 
 module.exports = env;
