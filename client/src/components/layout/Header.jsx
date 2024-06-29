@@ -1,6 +1,7 @@
 import React from 'react';
 import ThemeToggle from '../ThemeToggle';
 import LoginButton from '../LoginButton';
+import UserBadge from '../UserBadge';
 import { Sheet, Stack, Typography } from '@mui/joy';
 
 function Header(props) {
@@ -32,6 +33,7 @@ function Header(props) {
                     justifyItems="flex-end"
                     spacing={2}
                 >
+                    <UserBadge />
                     <LoginButton />
                     <ThemeToggle />
                 </Stack>
