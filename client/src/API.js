@@ -34,6 +34,9 @@ const handleErrorResponseStatus = (response) => {
     if (response.status === 500) {
         throw new Error('Internal server error.');
     }
+    if (response.status === 422) {
+        throw new Error('Invalid input, please check your data.');
+    }
 };
 
 const getProfile = async () => {
