@@ -241,7 +241,14 @@ function EditTicketForm({
                     placeholder="Provide a description..."
                     value={description}
                     minRows={3}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) =>
+                        setDescription(e.target.value.slice(0, 1000))
+                    }
+                    endDecorator={
+                        <Typography level="body-xs" sx={{ ml: 'auto' }}>
+                            {description.length}/1000
+                        </Typography>
+                    }
                 />
             </FormControl>
         </Stack>
