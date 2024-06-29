@@ -97,15 +97,17 @@ function TicketComments({ ticketId, ticketStatus, sx }) {
                             <CommentBubble comment={comment} />
                         ))}
                     </Stack>
-                    <Divider sx={{ my: 2 }} />
                 </>
             )}
-            <CommentInput
-                ticketId={ticketId}
-                ticketStatus={ticketStatus}
-                onSubmit={fetchComments}
-                loadingComments={loading}
-            />
+            <Box>
+                <Divider sx={{ my: 2 }} />
+                <CommentInput
+                    ticketId={ticketId}
+                    ticketStatus={ticketStatus}
+                    onSubmit={fetchComments}
+                    loadingComments={loading}
+                />
+            </Box>
         </Sheet>
     );
 }
