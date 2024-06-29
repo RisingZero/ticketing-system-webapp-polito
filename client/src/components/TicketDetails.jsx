@@ -79,7 +79,7 @@ function TicketDetails({ ticketId }) {
                             </Chip>
                         </Stack>
                         <Typography>
-                            Owned by <i>{ticket.ownerUsername}</i>
+                            Created by <i>{ticket.ownerUsername}</i>
                         </Typography>
                         <Divider sx={{ my: 2, width: '80%' }} />
                         <Typography level="title-md">Description</Typography>
