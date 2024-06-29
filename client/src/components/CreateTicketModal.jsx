@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../hooks';
+import { ToastSeverity } from './Toast';
 import API from '../API';
 
 import {
@@ -28,19 +30,28 @@ import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function CreateTicketModal() {
+    const { addToast } = useToast();
     const navigate = useNavigate();
 
     const [step, setStep] = useState(1);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = () => {
         console.log('Submit', title, description, category);
 
-        /* API.createTicket({ title, description, category }).then(() => {
-            navigate('/');
-        }); */
+        setLoading(true);
+        API.createTicket(title, description, category)
+            .then(() => {
+                addToast('Ticket created', { severity: ToastSeverity.SUCCESS });
+                navigate('/');
+            })
+            .catch((error) => {
+                addToast(error.message, { severity: ToastSeverity.ERROR });
+            })
+            .finally(() => setLoading(false));
     };
 
     return (
@@ -188,6 +199,7 @@ function CreateTicketModal() {
                                 sx={{ width: '100%' }}
                                 endDecorator={<SendIcon />}
                                 onClick={handleSubmit}
+                                loading={loading}
                             >
                                 Open ticket
                             </Button>
