@@ -38,6 +38,18 @@ class UsersController {
     }
 
     /**
+     * GET /api/users/me
+     * Get the current user's profile
+     */
+    async getProfile(req, res) {
+        res.json({
+            id: req.user.id,
+            username: req.user.username,
+            isAdmin: req.user.isAdmin,
+        });
+    }
+
+    /**
      * GET /api/users/auth-token
      * Get a JWT token for the current user
      */
@@ -45,7 +57,7 @@ class UsersController {
         const payload = {
             userId: req.user.id,
             username: req.user.username,
-            admin: req.user.isAdmin
+            admin: req.user.isAdmin,
         };
         const jwt = jsonwebtoken.sign(payload, environment.JWT_SECRET, {
             expiresIn: environment.JWT_EXPIRY,

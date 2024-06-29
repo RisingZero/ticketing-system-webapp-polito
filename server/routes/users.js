@@ -13,6 +13,7 @@ router.use(require('../middlewares/dbContext'));
 
 router.post('/login', AuthService.loginHandler, usersController.login);
 router.post('/logout', usersController.logout);
+router.get('/me', requireAuth(), usersController.getProfile);
 router.get('/auth-token', requireAuth(), usersController.getToken);
 //router.get('/passhash', usersController.passhash);
 
