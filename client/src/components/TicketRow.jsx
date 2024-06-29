@@ -32,7 +32,7 @@ function TicketRow({ ticket, onUpdate }) {
                     setLoadingEstimate(false);
                 });
         }
-    }, [ticket.title, ticket.category]);
+    }, [ticket.title, ticket.category, auth.logged]);
 
     return (
         <>
