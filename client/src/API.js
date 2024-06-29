@@ -65,6 +65,7 @@ const login = async (username, password) => {
 };
 
 const logout = async () => {
+    localStorage.removeItem('token');
     return await fetch(`${SERVER_BASE}/users/logout`, {
         method: 'POST',
         credentials: 'include',
@@ -210,6 +211,77 @@ const updateTicketCategory = async (ticketId, category, retry = true) => {
     return await response.json();
 };
 
+function HandleRequestJtwToken() {
+    this.subscribers = [];
+    this.request = null;
+
+    return async (newToken = false) => {
+        // Return token if already available and not requesting new token explicitly
+        const token = localStorage.getItem('token');
+        if (token && !newToken) {
+            return token;
+        }
+
+        const promise = new Promise((resolve, reject) => {
+            // Add caller to subscribers, to be notified when token is available
+            this.subscribers.push({ resolve, reject });
+
+            // Request token if not already in progress
+            if (!this.request) {
+                this.request = fetch(`${SERVER_BASE}/users/auth-token`, {
+                    credentials: 'include',
+                })
+                    .then(async (response) => {
+                        const data = await response.json();
+                        if (response.status === 401) {
+                            throw new Error(data.message);
+                        }
+                        return data;
+                    })
+                    .then((data) => {
+                        localStorage.setItem('token', data.token);
+
+                        this.subscribers.forEach((subscriber) =>
+                            subscriber.resolve(data.token)
+                        );
+                    })
+                    .catch((error) => {
+                        this.subscribers.forEach((subscriber) =>
+                            subscriber.reject(error)
+                        );
+                    })
+                    .finally(() => {
+                        this.subscribers = [];
+                        this.request = null;
+                    });
+            }
+        });
+        return promise;
+    };
+}
+
+const requestJtwToken = new HandleRequestJtwToken();
+const ticketTimeEstimate = async (title, category, requestToken = false) => {
+    const response = await fetch(`${SERVER2_BASE}/ticket-estimate`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${await requestJtwToken(requestToken)}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, category }),
+    });
+
+    const data = await response.json();
+    if (response.status === 401) {
+        // Request token failed, throw error
+        if (requestToken) throw new Error(data.error.message);
+        // Request new token and retry
+        return ticketTimeEstimate(title, category, true);
+    }
+
+    return data;
+};
+
 export default {
     Ticket,
     getProfile,
@@ -222,4 +294,6 @@ export default {
     createComment,
     updateTicketStatus,
     updateTicketCategory,
+    requestJtwToken,
+    ticketTimeEstimate,
 };
