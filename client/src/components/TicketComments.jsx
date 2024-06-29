@@ -94,7 +94,10 @@ function TicketComments({ ticketId, ticketStatus, sx }) {
                         ref={commentsListRef}
                     >
                         {comments.map((comment) => (
-                            <CommentBubble comment={comment} />
+                            <CommentBubble
+                                comment={comment}
+                                key={`ticket-${ticketId}-comment-${comment.id}}`}
+                            />
                         ))}
                     </Stack>
                 </>
@@ -112,7 +115,7 @@ function TicketComments({ ticketId, ticketStatus, sx }) {
     );
 }
 
-function CommentBubble({ comment }) {
+function CommentBubble({ comment, key }) {
     const auth = React.useContext(AuthContext);
 
     const meAuthor = comment.authorId === auth.user.id;
@@ -126,6 +129,7 @@ function CommentBubble({ comment }) {
                     alignSelf: meAuthor ? 'flex-end' : 'flex-start',
                 },
             ]}
+            key={key}
         >
             <Stack
                 direction="row"
