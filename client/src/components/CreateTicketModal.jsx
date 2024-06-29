@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks';
 import { ToastSeverity } from './Toast';
@@ -23,6 +23,7 @@ import {
     Step,
     StepIndicator,
     Typography,
+    Skeleton
 } from '@mui/joy';
 import SendIcon from '@mui/icons-material/Send';
 import CheckIcon from '@mui/icons-material/Check';
@@ -268,6 +269,22 @@ function EditTicketForm({
 }
 
 function ReviewTicketForm({ title, description, category }) {
+    const { addToast } = useToast();
+
+    const [loadingEstimate, setLoadingEstimate] = useState(true);
+    const [timeEstimate, setTimeEstimate] = useState('');
+
+    useEffect(() => {
+        API.ticketTimeEstimate(title, category)
+            .then((res) => {
+                setTimeEstimate(`${res.estimate} ${res.unit}`);
+            })
+            .catch((error) => {
+                addToast(error.message, { severity: ToastSeverity.ERROR });
+            })
+            .finally(() => setLoadingEstimate(false));
+    }, []);
+
     return (
         <Stack spacing={2}>
             <Box>
@@ -288,6 +305,12 @@ function ReviewTicketForm({ title, description, category }) {
                     }}
                 >
                     {description}
+                </Typography>
+            </Box>
+            <Box>
+                <Typography level="title-lg">Resolve time estimate</Typography>
+                <Typography>
+                    <Skeleton loading={loadingEstimate}>{timeEstimate}</Skeleton>
                 </Typography>
             </Box>
         </Stack>
