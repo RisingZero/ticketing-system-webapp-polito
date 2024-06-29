@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import AuthContext from '../AuthContext';
+import API from '../API';
 import * as utils from '../utils';
-import { Chip, IconButton } from '@mui/joy';
+
+import { Chip, IconButton, Skeleton, Typography } from '@mui/joy';
 import TicketDetails from './TicketDetails';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -12,6 +14,25 @@ function TicketRow({ ticket, onUpdate }) {
     const auth = React.useContext(AuthContext);
 
     const [open, setOpen] = useState(false);
+    const [timeEstimate, setTimeEstimate] = useState(null);
+    const [loadingEstimate, setLoadingEstimate] = useState(true);
+
+    React.useEffect(() => {
+        if (auth.logged && auth.user.isAdmin) {
+            setLoadingEstimate(true);
+            API.ticketTimeEstimate(ticket.title, ticket.category)
+                .then((data) => {
+                    setTimeEstimate(`${data.estimate} ${data.unit}`);
+                })
+                .catch((error) => {
+                    console.log(error);
+                    setTimeEstimate('N/A');
+                })
+                .finally(() => {
+                    setLoadingEstimate(false);
+                });
+        }
+    }, [ticket.title, ticket.category]);
 
     return (
         <>
@@ -56,6 +77,15 @@ function TicketRow({ ticket, onUpdate }) {
                 <td>{ticket.title}</td>
                 <td>{ticket.ownerUsername}</td>
                 <td>{utils.formatDateFromEpoch(ticket.createdAt)}</td>
+                {auth.logged && auth.user.isAdmin && (
+                    <td>
+                        <Typography>
+                            <Skeleton loading={loadingEstimate}>
+                                {timeEstimate}
+                            </Skeleton>
+                        </Typography>
+                    </td>
+                )}
             </tr>
             {auth.logged && open && (
                 <tr style={{ height: 0, padding: 0 }}>

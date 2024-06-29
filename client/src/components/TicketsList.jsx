@@ -1,10 +1,13 @@
 import React, { useMemo } from 'react';
+import AuthContext from '../AuthContext';
 import * as utils from '../utils';
 
 import { Sheet, Table, Skeleton } from '@mui/joy';
 import TicketRow from './TicketRow';
 
 function TicketsList({ tickets, loading, onUpdate }) {
+    const auth = React.useContext(AuthContext);
+
     const loadingRows = useMemo(
         () =>
             Array.from({ length: 10 }).map((_, indexO) => (
@@ -32,9 +35,12 @@ function TicketsList({ tickets, loading, onUpdate }) {
                         <th style={{ width: '50px' }} />
                         <th style={{ width: '10%' }}>Status</th>
                         <th style={{ width: '15%' }}>Category</th>
-                        <th style={{ width: '50%' }}>Title</th>
-                        <th style={{ width: '20%' }}>Owner</th>
+                        <th style={{ width: '40%' }}>Title</th>
+                        <th style={{ width: '15%' }}>Owner</th>
                         <th style={{ width: '15%' }}>Created at</th>
+                        {auth.logged && auth.user.isAdmin && (
+                            <th style={{ width: '15%' }}>Time estimate</th>
+                        )}
                     </tr>
                 </thead>
                 <tbody>
