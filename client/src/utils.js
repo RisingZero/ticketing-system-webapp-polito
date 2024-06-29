@@ -7,3 +7,7 @@ export function randomWidth(min, max) {
 export function formatDateFromEpoch(seconds) {
     return DateTime.fromSeconds(seconds).toFormat('dd/MM/yyyy HH:mm:ss');
 }
+
+export function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
