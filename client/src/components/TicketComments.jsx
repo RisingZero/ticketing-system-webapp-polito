@@ -24,14 +24,14 @@ function TicketComments({ ticketId, ticketStatus, sx }) {
     const [comments, setComments] = React.useState([]);
     const commentsListRef = React.useRef();
 
-    const fetchComments = React.useCallback(() => {
+    const fetchComments = () => {
         API.getComments(ticketId)
             .then((comments) => setComments(comments))
             .catch((error) => {
                 addToast(error.message, { severity: ToastSeverity.ERROR });
             })
             .finally(() => setLoading(false));
-    }, []);
+    };
 
     React.useEffect(() => {
         if (commentsListRef.current) {
@@ -179,7 +179,7 @@ function CommentInput({
 
     const noCommentAllowed = ticketStatus === 'closed';
 
-    const submitComment = React.useCallback((content) => {
+    const submitComment = (content) => {
         if (content.trim().length === 0) return;
         setLoading(true);
         API.createComment(ticketId, content.trim())
@@ -191,7 +191,7 @@ function CommentInput({
                 addToast(error.message, { severity: ToastSeverity.ERROR });
             })
             .finally(() => setLoading(false));
-    }, []);
+    };
 
     return (
         <Stack

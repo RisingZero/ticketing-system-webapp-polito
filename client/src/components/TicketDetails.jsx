@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AuthContext from '../AuthContext';
 import { ToastSeverity } from './Toast';
 import { useToast } from '../hooks';
 import API from '../API';
@@ -6,19 +7,25 @@ import API from '../API';
 import {
     Sheet,
     Divider,
+    Button,
     Chip,
     CircularProgress,
     Box,
     Stack,
     Typography,
+    Select,
+    Option,
 } from '@mui/joy';
 import TicketComments from './TicketComments';
 
-function TicketDetails({ ticketId }) {
+function TicketDetails({ ticketId, ownerId, onUpdate }) {
     const { addToast } = useToast();
+    const auth = React.useContext(AuthContext);
 
     const [loading, setLoading] = useState(true);
     const [ticket, setTicket] = useState(null);
+
+    const meAuthor = auth.user.id === ownerId;
 
     const fetchData = () => {
         setLoading(true);
@@ -27,7 +34,7 @@ function TicketDetails({ ticketId }) {
                 setTicket(ticket);
             })
             .catch((error) => {
-                addToast(error.message, ToastSeverity.ERROR);
+                addToast(error.message, { severity: ToastSeverity.ERROR });
             })
             .finally(() => setLoading(false));
     };
@@ -35,6 +42,31 @@ function TicketDetails({ ticketId }) {
     useEffect(() => {
         fetchData();
     }, []);
+
+    const handleChangeCategory = (e, v) => {
+        API.updateTicketCategory(ticketId, v)
+            .then((res) => {
+                setTicket(res.ticket);
+                addToast(res.message, { severity: ToastSeverity.SUCCESS });
+                if (onUpdate) onUpdate();
+            })
+            .catch((error) => {
+                addToast(error.message, { severity: ToastSeverity.ERROR });
+            });
+    };
+
+    const handleChangeStatus = () => {
+        const newStatus = ticket.status === 'open' ? 'closed' : 'open';
+        API.updateTicketStatus(ticketId, newStatus)
+            .then((res) => {
+                setTicket(res.ticket);
+                addToast(res.message, { severity: ToastSeverity.SUCCESS });
+                if (onUpdate) onUpdate();
+            })
+            .catch((error) => {
+                addToast(error.message, { severity: ToastSeverity.ERROR });
+            });
+    }
 
     return (
         <Sheet
@@ -64,7 +96,12 @@ function TicketDetails({ ticketId }) {
                         <Typography level="h3" sx={{ mb: 2 }}>
                             {ticket.title}
                         </Typography>
-                        <Stack direction="row" spacing={2}>
+                        <Stack
+                            direction="row"
+                            spacing={2}
+                            alignItems={'flex-end'}
+                            sx={{ pb: 1 }}
+                        >
                             <Typography
                                 color={
                                     ticket.status === 'open'
@@ -74,9 +111,24 @@ function TicketDetails({ ticketId }) {
                             >
                                 {ticket.status}
                             </Typography>
-                            <Chip color="neutral" variant="outlined">
-                                {ticket.category}
-                            </Chip>
+                            {auth.user.isAdmin ? (
+                                <Select
+                                    name="category"
+                                    placeholder="Select a category"
+                                    value={ticket.category}
+                                    onChange={handleChangeCategory}
+                                >
+                                    {API.Ticket.CATEGORIES.map((category) => (
+                                        <Option key={category} value={category}>
+                                            {category}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            ) : (
+                                <Chip color="neutral" variant="outlined">
+                                    {ticket.category}
+                                </Chip>
+                            )}
                         </Stack>
                         <Typography>
                             Created by <i>{ticket.ownerUsername}</i>
@@ -86,10 +138,24 @@ function TicketDetails({ ticketId }) {
                         <Typography sx={{ whiteSpace: 'pre-wrap' }}>
                             {ticket.description}
                         </Typography>
+                        {(auth.user.isAdmin ||
+                            (meAuthor && ticket?.status === 'open')) && (
+                            <Button
+                                color="danger"
+                                variant="outlined"
+                                sx={{ mt: 2 }}
+                                onClick={handleChangeStatus}
+                            >
+                                {ticket?.status === 'open'
+                                    ? 'Close ticket'
+                                    : 'Reopen ticket'}
+                            </Button>
+                        )}
                     </Box>
                     <TicketComments
                         ticketId={ticketId}
                         ticketStatus={ticket.status}
+                        meAuthor={meAuthor}
                         sx={{
                             width: '100%',
                         }}

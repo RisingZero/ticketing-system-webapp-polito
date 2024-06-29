@@ -8,7 +8,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import BlockIcon from '@mui/icons-material/Block';
 
-function TicketRow({ ticket }) {
+function TicketRow({ ticket, onUpdate }) {
     const auth = React.useContext(AuthContext);
 
     const [open, setOpen] = useState(false);
@@ -60,7 +60,11 @@ function TicketRow({ ticket }) {
             {auth.logged && open && (
                 <tr style={{ height: 0, padding: 0 }}>
                     <td colSpan={6}>
-                        <TicketDetails ticketId={ticket.id} />
+                        <TicketDetails
+                            ticketId={ticket.id}
+                            ownerId={ticket.ownerId}
+                            onUpdate={onUpdate}
+                        />
                     </td>
                 </tr>
             )}

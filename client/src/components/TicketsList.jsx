@@ -4,7 +4,7 @@ import * as utils from '../utils';
 import { Sheet, Table, Skeleton } from '@mui/joy';
 import TicketRow from './TicketRow';
 
-function TicketsList({ tickets, loading }) {
+function TicketsList({ tickets, loading, onUpdate }) {
     const loadingRows = useMemo(
         () =>
             Array.from({ length: 10 }).map((_, indexO) => (
@@ -39,7 +39,11 @@ function TicketsList({ tickets, loading }) {
                 </thead>
                 <tbody>
                     {tickets.map((ticket) => (
-                        <TicketRow key={ticket.id} ticket={ticket} />
+                        <TicketRow
+                            key={ticket.id}
+                            ticket={ticket}
+                            onUpdate={onUpdate}
+                        />
                     ))}
                     {loading &&
                         loadingRows.slice(

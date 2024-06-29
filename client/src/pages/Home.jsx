@@ -92,7 +92,11 @@ function Home() {
                     </Button>
                 </Stack>
             </Stack>
-            <TicketsList tickets={tickets} loading={loading} />
+            <TicketsList
+                tickets={tickets}
+                loading={loading}
+                onUpdate={fetchTickets}
+            />
 
             <Outlet />
         </Box>
