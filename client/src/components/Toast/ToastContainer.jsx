@@ -26,9 +26,40 @@ function ToastContainer({ toasts }) {
                     startDecorator={ToastIcons[toast.severity]}
                     autoHideDuration={3000}
                 >
-                    {toast.message}
+                    <ToastContent key={toast.id}>{toast.message}</ToastContent>
                 </Snackbar>
             ))}
+        </Stack>
+    );
+}
+
+function ToastContent({ children, key }) {
+    if (typeof children === 'string') return <div>{children}</div>;
+    if (!children.errors) return <div>{children.message}</div>;
+
+    console.log(children.errors);
+    return (
+        <Stack
+            sx={{
+                maxWidth: 300,
+                whiteSpace: 'normal',
+                px: 2,
+            }}
+        >
+            <div
+                style={{
+                    fontWeight: 'bold',
+                    marginBottom: '0.2rem',
+                    fontSize: '1.1rem',
+                }}
+            >
+                {children.message}
+            </div>
+            <div>
+                {children.errors.map((error, index) => (
+                    <div key={`toast-${key}-error-${index}`}>{error}</div>
+                ))}
+            </div>
         </Stack>
     );
 }

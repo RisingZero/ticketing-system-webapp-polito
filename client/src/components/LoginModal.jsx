@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useToast } from '../hooks';
 import API from '../API';
 
@@ -19,6 +19,7 @@ import {
 
 function LoginModal({ loginCallback }) {
     const navigate = useNavigate();
+    const { onSubmit } = useOutletContext();
     const { addToast } = useToast();
 
     const handleLogin = (e) => {
@@ -34,14 +35,11 @@ function LoginModal({ loginCallback }) {
                         severity: ToastSeverity.SUCCESS,
                     });
                     loginCallback(user);
-                } else {
-                    addToast('Invalid username or password', {
-                        severity: ToastSeverity.ERROR,
-                    });
+                    if (onSubmit) onSubmit();
                 }
             })
             .catch((error) => {
-                addToast('Failed to reach the server', {
+                addToast(error, {
                     severity: ToastSeverity.ERROR,
                 });
             });

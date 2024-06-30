@@ -89,7 +89,7 @@ function TicketRow({ ticket, onUpdate }) {
             </tr>
             {auth.logged && open && (
                 <tr style={{ height: 0, padding: 0 }}>
-                    <td colSpan={6}>
+                    <td colSpan={auth.user.isAdmin ? 7 : 6}>
                         <TicketDetails
                             ticketId={ticket.id}
                             ownerId={ticket.ownerId}

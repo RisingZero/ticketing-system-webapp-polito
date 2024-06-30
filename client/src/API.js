@@ -19,23 +19,17 @@ const Ticket = {
     STATUS: ['open', 'closed'],
 };
 
-const handleErrorResponseStatus = (response) => {
-    if (response.status === 401) {
-        throw new Error('Not authorized, please login first.');
+class APIError extends Error {
+    constructor({ message, errors }) {
+        super(message);
+        this.name = this.constructor.name;
+        this.errors = errors;
     }
-    if (response.status === 403) {
-        throw new Error(
-            'Forbidden, you are not allowed to perform this action.'
-        );
-    }
-    if (response.status === 404) {
-        throw new Error('Ticket not found.');
-    }
-    if (response.status === 500) {
-        throw new Error('Internal server error.');
-    }
-    if (response.status === 422) {
-        throw new Error('Invalid input, please check your data.');
+}
+
+const handleErrorResponseStatus = (response, data) => {
+    if (!response.ok) {
+        throw new APIError(data);
     }
 };
 
@@ -44,6 +38,7 @@ const getProfile = async () => {
         credentials: 'include',
     });
     if (response.status === 401) {
+        // Silent error, user is not logged in
         return null;
     }
     return await response.json();
@@ -58,23 +53,29 @@ const login = async (username, password) => {
         body: JSON.stringify({ username, password }),
         credentials: 'include',
     });
+
+    const data = await response.json();
     if (response.status === 401) {
-        return null;
+        throw new APIError(data);
     }
-    return await response.json();
+    return data;
 };
 
 const logout = async () => {
     localStorage.removeItem('token');
-    return await fetch(`${SERVER_BASE}/users/logout`, {
-        method: 'POST',
-        credentials: 'include',
-    });
+    // Call logout on server to clear session
+    try {
+        await fetch(`${SERVER_BASE}/users/logout`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+    } catch (error) {} // Ignore connection errors, user is logged out anyway
 };
 
 const getTickets = async () => {
     const response = await fetch(`${SERVER_BASE}/tickets`);
     const data = await response.json();
+    handleErrorResponseStatus(response, data);
     return data;
 };
 
@@ -88,19 +89,18 @@ const createTicket = async (title, description, category, retry = true) => {
         credentials: 'include',
     });
 
-    handleErrorResponseStatus(response);
-
+    const data = await response.json();
     if (response.status === 503) {
-        if (!retry)
-            throw new Error('Service unavailable, please try again later.');
+        if (!retry) throw new APIError(data);
 
         // auto-retry after 'Retry-After' seconds
         const retryAfter = response.headers.get('Retry-After');
         await delay(retryAfter);
         return createTicket(title, description, category, false);
     }
+    handleErrorResponseStatus(response, data);
 
-    return await response.json();
+    return data;
 };
 
 const getTicketById = async (ticketId) => {
@@ -108,9 +108,10 @@ const getTicketById = async (ticketId) => {
         credentials: 'include',
     });
 
-    handleErrorResponseStatus(response);
+    const data = await response.json();
+    handleErrorResponseStatus(response, data);
 
-    return await response.json();
+    return data;
 };
 
 const getComments = async (ticketId) => {
@@ -121,9 +122,10 @@ const getComments = async (ticketId) => {
         }
     );
 
-    handleErrorResponseStatus(response);
+    const data = await response.json();
+    handleErrorResponseStatus(response, data);
 
-    return await response.json();
+    return data;
 };
 
 const createComment = async (ticketId, content, retry = true) => {
@@ -139,23 +141,18 @@ const createComment = async (ticketId, content, retry = true) => {
         }
     );
 
-    handleErrorResponseStatus(response);
-
+    const data = await response.json();
     if (response.status === 503) {
-        if (!retry)
-            throw new Error('Service unavailable, please try again later.');
+        if (!retry) throw new APIError(data);
 
         // auto-retry after 'Retry-After' seconds
         const retryAfter = response.headers.get('Retry-After');
         await delay(retryAfter);
         return createComment(ticketId, content, false);
     }
+    handleErrorResponseStatus(response, data);
 
-    if (response.status === 409) {
-        throw new Error('Ticket is closed, no more comments allowed.');
-    }
-
-    return await response.json();
+    return data;
 };
 
 const updateTicketStatus = async (ticketId, status, retry = true) => {
@@ -168,19 +165,18 @@ const updateTicketStatus = async (ticketId, status, retry = true) => {
         credentials: 'include',
     });
 
-    handleErrorResponseStatus(response);
-
+    const data = await response.json();
     if (response.status === 503) {
-        if (!retry)
-            throw new Error('Service unavailable, please try again later.');
+        if (!retry) throw new APIError(data);
 
         // auto-retry after 'Retry-After' seconds
         const retryAfter = response.headers.get('Retry-After');
         await delay(retryAfter);
         return updateTicketStatus(ticketId, status, false);
     }
+    handleErrorResponseStatus(response, data);
 
-    return await response.json();
+    return data;
 };
 
 const updateTicketCategory = async (ticketId, category, retry = true) => {
@@ -196,19 +192,18 @@ const updateTicketCategory = async (ticketId, category, retry = true) => {
         }
     );
 
-    handleErrorResponseStatus(response);
-
+    const data = await response.json();
     if (response.status === 503) {
-        if (!retry)
-            throw new Error('Service unavailable, please try again later.');
+        if (!retry) throw new APIError(data);
 
         // auto-retry after 'Retry-After' seconds
         const retryAfter = response.headers.get('Retry-After');
         await delay(retryAfter);
         return updateTicketCategory(ticketId, category, false);
     }
+    handleErrorResponseStatus(response, data);
 
-    return await response.json();
+    return data;
 };
 
 function HandleRequestJtwToken() {
@@ -234,7 +229,7 @@ function HandleRequestJtwToken() {
                     .then(async (response) => {
                         const data = await response.json();
                         if (response.status === 401) {
-                            throw new Error(data.message);
+                            throw new APIError(data);
                         }
                         return data;
                     })
@@ -274,7 +269,7 @@ const ticketTimeEstimate = async (title, category, requestToken = false) => {
     const data = await response.json();
     if (response.status === 401) {
         // Request token failed, throw error
-        if (requestToken) throw new Error(data.error.message);
+        if (requestToken) throw new APIError(data);
         // Request new token and retry
         return ticketTimeEstimate(title, category, true);
     }

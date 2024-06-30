@@ -24,8 +24,8 @@ function Home() {
             .then((data) => {
                 setTickets(data);
             })
-            .catch(() => {
-                addToast('Failed to fetch tickets', {
+            .catch((error) => {
+                addToast(error, {
                     severity: ToastSeverity.ERROR,
                 });
             })
@@ -97,7 +97,7 @@ function Home() {
                 onUpdate={fetchTickets}
             />
 
-            <Outlet />
+            <Outlet context={{ onSubmit: fetchTickets }} />
         </Box>
     );
 }

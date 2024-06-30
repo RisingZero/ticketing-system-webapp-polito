@@ -33,7 +33,7 @@ function TicketDetails({ ticketId, ownerId, onUpdate }) {
                 setTicket(ticket);
             })
             .catch((error) => {
-                addToast(error.message, { severity: ToastSeverity.ERROR });
+                addToast(error, { severity: ToastSeverity.ERROR });
             })
             .finally(() => setLoading(false));
     };
@@ -50,7 +50,7 @@ function TicketDetails({ ticketId, ownerId, onUpdate }) {
                 if (onUpdate) onUpdate();
             })
             .catch((error) => {
-                addToast(error.message, { severity: ToastSeverity.ERROR });
+                addToast(error, { severity: ToastSeverity.ERROR });
             });
     };
 
@@ -63,7 +63,7 @@ function TicketDetails({ ticketId, ownerId, onUpdate }) {
                 if (onUpdate) onUpdate();
             })
             .catch((error) => {
-                addToast(error.message, { severity: ToastSeverity.ERROR });
+                addToast(error, { severity: ToastSeverity.ERROR });
             });
     };
 

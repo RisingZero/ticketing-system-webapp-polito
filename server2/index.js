@@ -36,10 +36,8 @@ app.use((err, req, res, next) => {
     console.error(err);
     if (err) {
         res.status(401).send({
-            error: {
-                code: err.code,
-                message: 'Unauthorized',
-            },
+            message: 'Unauthorized',
+            errors: [err.code],
         });
     } else {
         next();
@@ -60,9 +58,10 @@ app.post(
     (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res
-                .status(400)
-                .json({ errors: errors.array().map(errorFormatter) });
+            return res.status(422).json({
+                message: 'Invalid parameters',
+                errors: errors.array().map(errorFormatter),
+            });
         }
         const estimateHours =
             (req.body.title.length + req.body.category.length) * 10 +

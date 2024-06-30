@@ -27,7 +27,7 @@ function TicketComments({ ticketId, ticketStatus, sx }) {
         API.getComments(ticketId)
             .then((comments) => setComments(comments))
             .catch((error) => {
-                addToast(error.message, { severity: ToastSeverity.ERROR });
+                addToast(error, { severity: ToastSeverity.ERROR });
             })
             .finally(() => setLoading(false));
     };
@@ -191,7 +191,7 @@ function CommentInput({
                 if (onSubmit) onSubmit();
             })
             .catch((error) => {
-                addToast(error.message, { severity: ToastSeverity.ERROR });
+                addToast(error, { severity: ToastSeverity.ERROR });
             })
             .finally(() => setLoading(false));
     };
@@ -243,7 +243,7 @@ function CommentInput({
                 disabled={
                     content.trim().length === 0 || ticketStatus === 'closed'
                 }
-                onClick={submitComment}
+                onClick={() => submitComment(content)}
             >
                 <SendIcon />
             </IconButton>

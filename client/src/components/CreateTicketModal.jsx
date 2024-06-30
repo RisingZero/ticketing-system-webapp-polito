@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useToast } from '../hooks';
 import { ToastSeverity } from './Toast';
 import API from '../API';
@@ -23,7 +23,7 @@ import {
     Step,
     StepIndicator,
     Typography,
-    Skeleton
+    Skeleton,
 } from '@mui/joy';
 import SendIcon from '@mui/icons-material/Send';
 import CheckIcon from '@mui/icons-material/Check';
@@ -33,6 +33,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 function CreateTicketModal() {
     const { addToast } = useToast();
     const navigate = useNavigate();
+    const { onSubmit } = useOutletContext();
 
     const [step, setStep] = useState(1);
     const [title, setTitle] = useState('');
@@ -45,12 +46,15 @@ function CreateTicketModal() {
 
         setLoading(true);
         API.createTicket(title, description, category)
-            .then(() => {
-                addToast('Ticket created', { severity: ToastSeverity.SUCCESS });
+            .then((res) => {
+                addToast('Ticket created succesfully', {
+                    severity: ToastSeverity.SUCCESS,
+                });
+                if (onSubmit) onSubmit(res);
                 navigate('/');
             })
             .catch((error) => {
-                addToast(error.message, { severity: ToastSeverity.ERROR });
+                addToast(error, { severity: ToastSeverity.ERROR });
             })
             .finally(() => setLoading(false));
     };
@@ -280,7 +284,7 @@ function ReviewTicketForm({ title, description, category }) {
                 setTimeEstimate(`${res.estimate} ${res.unit}`);
             })
             .catch((error) => {
-                addToast(error.message, { severity: ToastSeverity.ERROR });
+                addToast(error, { severity: ToastSeverity.ERROR });
             })
             .finally(() => setLoadingEstimate(false));
     }, []);
@@ -310,7 +314,9 @@ function ReviewTicketForm({ title, description, category }) {
             <Box>
                 <Typography level="title-lg">Resolve time estimate</Typography>
                 <Typography>
-                    <Skeleton loading={loadingEstimate}>{timeEstimate}</Skeleton>
+                    <Skeleton loading={loadingEstimate}>
+                        {timeEstimate}
+                    </Skeleton>
                 </Typography>
             </Box>
         </Stack>
