@@ -7,9 +7,7 @@ import { Stack, Box } from '@mui/joy';
 function Layout(props) {
     return (
         <Stack>
-            <Header
-                title="JourneyHub"
-            />
+            <Header title="Help on Road" />
             <Box
                 component="main"
                 sx={{
