@@ -290,11 +290,32 @@ Most endpoints can generically reply with the following HTTP error codes, if no 
 
 ## Main React Components
 
-- `ListOfSomething` (in `List.js`): component purpose and main functionality
-- `GreatButton` (in `GreatButton.js`): component purpose and main functionality
-- ...
+- `App` (in `App.jsx`): root element of the application. On load fetches current authentication state, eventually updating the `AuthContext`
+- `Layout` (in `components/layout/Layout.jsx`): application layout setup, with Header and main body content
+- `Home` (in `pages/Home.jsx`): main application page, managing ticket fetch from API and keeping internal state of the list of tickets
+- `NoMatch` (in `pages/NoMatch.jsx`): page to show for any non-matching route
+- `TicketsList` (in `components/TicketsList.jsx`): table displaying the list of tickets, received as prop from the `Home` component
+- `TicketRow` (in `components/TicketRow.jsx`): row of the table of tickets, manages the display of ticket information according to user role (admin/normal), fetches the resolve time estimate from server2 (if user is admin) and manages the expansion of the ticket details
+- `TicketDetails` (in `TicketDetails.jsx`): when mounted from the `TicketRow` component fetches ticket details and manages status and category changes
+- `TicketComments` (in `componetns/TicketComments.jsx`): fetches and manages the comments associated to the tickets, rendering them as a list of `CommentBubble`
+- `CommentBubble` (in `components/TicketComments.jsx`): displays single comment text blocks, customized according to logged user and comment author
+- `CommentInput` (in `components/TicketComments.jsx`): input box for adding new comments to tickets
+- `LoginModal` (in `components/LoginModal.jsx`): modal displaying the login form. Shown in overlay inside the `Outlet` in `Home` component
+- `CreateTicketModal` (in `components/CreateTicketModal.jsx`): modal displaying the ticket creation form. Shown in overlay inside the `Outlet` in `Home` component. Manages the state of the current ticket being created (`title, category, description`) and controls the steps in ticket creation (edit/review)
+- `EditTicketForm` (in `components/CreateTicketModal.jsx`): editable form for title, category and description input of the new ticket being submitted
+- `ReviewTicketForm` (in `components/CreateTicketModal.jsx`): read-only view of the ticket, performing automatic request of time estimate to server2
+- `ToastProvider` (in `components/Toast/ToastProvider.jsx`): wrapper to add global toast notification support to all child components, keeping the state of all currently displayed toast. Provider of `ToastContext`
+- `ToastContainer` (in `components/Toast/ToastContainer.jsx`): displays all active toasts on the bottom-right edge of the page
 
-(only _main_ components, minor ones may be skipped)
+## Context Providers
+
+- `AuthContext`: context providing global access to login status and user informations
+- `ToastContext`: context providing global access to common interface for toast notification display
+
+## hooks
+
+- `useAuth` (in `hooks/useAuth.jsx`): interface to access `AuthContext`
+- `useToast` (in `hooks/useToast.jsx`): interface to access `ToastContext`
 
 ## Screenshot
 
