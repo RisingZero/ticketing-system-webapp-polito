@@ -20,7 +20,7 @@ class AuthService {
         } catch (err) {
             console.error(err);
             return callback({
-                error: 'Error while connecting to the database',
+                message: 'Error while connecting to the database',
             });
         }
 
@@ -42,7 +42,7 @@ class AuthService {
             return callback(null, user);
         } catch (err) {
             console.error(err);
-            return callback({ error: 'An error occurred' });
+            return callback({ message: 'An error occurred' });
         }
     }
 
@@ -63,12 +63,12 @@ class AuthService {
                 if (user) {
                     callback(null, user);
                 } else {
-                    callback(null, false, { message: 'User not found' });
+                    callback({ message: 'An error occurred' });
                 }
             })
             .catch((err) => {
                 console.error(err);
-                callback({ error: 'An error occurred' });
+                callback({ message: 'An error occurred' });
             });
     }
 
@@ -79,7 +79,7 @@ class AuthService {
             }
 
             if (!user) {
-                return res.status(401).json({ message: info.message });
+                return res.status(401).json(info);
             }
 
             req.login(user, (err) => {

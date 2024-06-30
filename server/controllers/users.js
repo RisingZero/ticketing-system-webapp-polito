@@ -20,10 +20,10 @@ class UsersController {
      * Login a user
      */
     async login(req, res) {
-        console.log(req.user);
         res.json({
             id: req.user.id,
             username: req.user.username,
+            isAdmin: req.user.isAdmin,
         });
     }
 
