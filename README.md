@@ -319,7 +319,9 @@ Most endpoints can generically reply with the following HTTP error codes, if no 
 
 ## Screenshot
 
-![Screenshot](./img/screenshot.png)
+![Ticket List (Admin view)](./img/admin-ticket-view.png)
+![New ticket form (Edit)](./img/new-ticket-edit.png)
+![New ticket form (Review)](./img/new-ticket-review.png)
 
 ## Users Credentials
 
