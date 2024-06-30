@@ -297,7 +297,7 @@ Most endpoints can generically reply with the following HTTP error codes, if no 
 - `TicketsList` (in `components/TicketsList.jsx`): table displaying the list of tickets, received as prop from the `Home` component
 - `TicketRow` (in `components/TicketRow.jsx`): row of the table of tickets, manages the display of ticket information according to user role (admin/normal), fetches the resolve time estimate from server2 (if user is admin) and manages the expansion of the ticket details
 - `TicketDetails` (in `TicketDetails.jsx`): when mounted from the `TicketRow` component fetches ticket details and manages status and category changes
-- `TicketComments` (in `componetns/TicketComments.jsx`): fetches and manages the comments associated to the tickets, rendering them as a list of `CommentBubble`
+- `TicketComments` (in `components/TicketComments.jsx`): fetches and manages the comments associated to the tickets, rendering them as a list of `CommentBubble`
 - `CommentBubble` (in `components/TicketComments.jsx`): displays single comment text blocks, customized according to logged user and comment author
 - `CommentInput` (in `components/TicketComments.jsx`): input box for adding new comments to tickets
 - `LoginModal` (in `components/LoginModal.jsx`): modal displaying the login form. Shown in overlay inside the `Outlet` in `Home` component
