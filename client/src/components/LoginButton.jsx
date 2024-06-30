@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import AuthContext from '../AuthContext';
+import { useAuth } from '../hooks';
 
 import { Button } from '@mui/joy';
 
 function LoginButton() {
-    const auth = React.useContext(AuthContext);
+    const auth = useAuth();
     const navigate = useNavigate();
 
     return (

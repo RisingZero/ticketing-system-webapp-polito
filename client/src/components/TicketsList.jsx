@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
-import AuthContext from '../AuthContext';
+import { useAuth } from '../hooks';
 import * as utils from '../utils';
 
 import { Sheet, Table, Skeleton } from '@mui/joy';
 import TicketRow from './TicketRow';
 
 function TicketsList({ tickets, loading, onUpdate }) {
-    const auth = React.useContext(AuthContext);
+    const auth = useAuth();
 
     const loadingRows = useMemo(
         () =>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AuthContext from '../AuthContext';
+import { useAuth } from '../hooks';
 import API from '../API';
 import * as utils from '../utils';
 
@@ -11,7 +11,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import BlockIcon from '@mui/icons-material/Block';
 
 function TicketRow({ ticket, onUpdate }) {
-    const auth = React.useContext(AuthContext);
+    const auth = useAuth();
 
     const [open, setOpen] = useState(false);
     const [timeEstimate, setTimeEstimate] = useState(null);

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link as RouterLink, Outlet } from 'react-router-dom';
-import AuthContext from '../AuthContext';
-import { useToast } from '../hooks';
+import { useToast, useAuth } from '../hooks';
 import { ToastSeverity } from '../components/Toast';
 import API from '../API';
 
@@ -13,7 +12,7 @@ import Add from '@mui/icons-material/Add';
 import CachedIcon from '@mui/icons-material/Cached';
 
 function Home() {
-    const auth = React.useContext(AuthContext);
+    const auth = useAuth();
     const { addToast } = useToast();
 
     const [loading, setLoading] = useState(true);

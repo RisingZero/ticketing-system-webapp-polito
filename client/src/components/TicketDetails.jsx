@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import AuthContext from '../AuthContext';
+import { useAuth, useToast } from '../hooks';
 import { ToastSeverity } from './Toast';
-import { useToast } from '../hooks';
 import API from '../API';
 
 import {
@@ -20,7 +19,7 @@ import TicketComments from './TicketComments';
 
 function TicketDetails({ ticketId, ownerId, onUpdate }) {
     const { addToast } = useToast();
-    const auth = React.useContext(AuthContext);
+    const auth = useAuth();
 
     const [loading, setLoading] = useState(true);
     const [ticket, setTicket] = useState(null);
@@ -66,7 +65,7 @@ function TicketDetails({ ticketId, ownerId, onUpdate }) {
             .catch((error) => {
                 addToast(error.message, { severity: ToastSeverity.ERROR });
             });
-    }
+    };
 
     return (
         <Sheet

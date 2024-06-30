@@ -290,7 +290,7 @@ Most endpoints can generically reply with the following HTTP error codes, if no 
 
 ## Main React Components
 
-- `App` (in `App.jsx`): root element of the application. On load fetches current authentication state, eventually updating the `AuthContext`
+- `AppWithProviders` (in `App.jsx`): root element of the application with access to context providers. On load fetches current authentication state, eventually updating the `AuthContext`
 - `Layout` (in `components/layout/Layout.jsx`): application layout setup, with Header and main body content
 - `Home` (in `pages/Home.jsx`): main application page, managing ticket fetch from API and keeping internal state of the list of tickets
 - `NoMatch` (in `pages/NoMatch.jsx`): page to show for any non-matching route

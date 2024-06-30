@@ -1,7 +1,6 @@
 import React from 'react';
-import AuthContext from '../AuthContext';
+import { useAuth, useToast } from '../hooks';
 import * as utils from '../utils';
-import { useToast } from '../hooks';
 import { ToastSeverity } from './Toast';
 import API from '../API';
 
@@ -116,7 +115,7 @@ function TicketComments({ ticketId, ticketStatus, sx }) {
 }
 
 function CommentBubble({ comment, key }) {
-    const auth = React.useContext(AuthContext);
+    const auth = useAuth();
 
     const meAuthor = comment.authorId === auth.user.id;
 
