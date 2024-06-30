@@ -114,7 +114,7 @@ function TicketComments({ ticketId, ticketStatus, sx }) {
     );
 }
 
-function CommentBubble({ comment, key }) {
+function CommentBubble({ comment }) {
     const auth = useAuth();
 
     const meAuthor = comment.authorId === auth.user.id;
@@ -128,7 +128,6 @@ function CommentBubble({ comment, key }) {
                     alignSelf: meAuthor ? 'flex-end' : 'flex-start',
                 },
             ]}
-            key={key}
         >
             <Stack
                 direction="row"

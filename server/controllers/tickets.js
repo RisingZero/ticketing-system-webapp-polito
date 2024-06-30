@@ -56,8 +56,7 @@ class TicketsController {
                 'Title must be less than ' +
                     Ticket.TITLE_MAX_LENGTH +
                     ' characters'
-            )
-            .escape(),
+            ),
         body('description')
             .not()
             .isEmpty()
@@ -68,8 +67,7 @@ class TicketsController {
                 'Description must be less than ' +
                     Ticket.CONTENT_BLOCK_MAX_LENGTH +
                     ' characters'
-            )
-            .escape(),
+            ),
     ];
     async createTicket(req, res) {
         const ticket = new Ticket(
@@ -178,8 +176,7 @@ class TicketsController {
                 'Content must be less than ' +
                     Ticket.CONTENT_BLOCK_MAX_LENGTH +
                     ' characters'
-            )
-            .escape(),
+            ),
     ];
     async createComment(req, res) {
         try {

@@ -26,14 +26,14 @@ function ToastContainer({ toasts }) {
                     startDecorator={ToastIcons[toast.severity]}
                     autoHideDuration={3000}
                 >
-                    <ToastContent key={toast.id}>{toast.message}</ToastContent>
+                    <ToastContent toastId={toast.id}>{toast.message}</ToastContent>
                 </Snackbar>
             ))}
         </Stack>
     );
 }
 
-function ToastContent({ children, key }) {
+function ToastContent({ children, toastId }) {
     if (typeof children === 'string') return <div>{children}</div>;
     if (!children.errors) return <div>{children.message}</div>;
 
@@ -57,7 +57,7 @@ function ToastContent({ children, key }) {
             </div>
             <div>
                 {children.errors.map((error, index) => (
-                    <div key={`toast-${key}-error-${index}`}>{error}</div>
+                    <div key={`toast-${toastId}-error-${index}`}>{error}</div>
                 ))}
             </div>
         </Stack>
