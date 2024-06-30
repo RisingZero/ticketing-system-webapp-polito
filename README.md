@@ -239,15 +239,54 @@ Most endpoints can generically reply with the following HTTP error codes, if no 
 
 ## API Server2
 
-- GET `/api/something`
-  - request parameters
-  - response body content
+- GET `/api/ticket-estimate` [JWT AUTHENTICATION]
+  - Request body
+  ```json
+  {
+    "title": "title",
+    "category": "category"
+  }
+  ```
+  - Response [200]
+  ```json
+  {
+    "estimate": 1,
+    "unit": "hours|days"
+  }
+  ```
 
 ## Database Tables
 
-- Table `users` - contains xx yy zz
-- Table `something` - contains ww qq ss
-- ...
+- Table `users` - contains users registered in the system
+
+| Column   | Type    | Attributes                | Allowed values |
+| -------- | ------- | ------------------------- | -------------- |
+| id       | INTEGER | PRIMARY KEY AUTOINCREMENT |                |
+| username | TEXT    | UNIQUE NOT NULL           |                |
+| password | TEXT    | NOT NULL                  |                |
+| is_admin | INTEGER | NOT NULL                  | 0, 1           |
+
+- Table `tickets` - contains tickets submitted by users
+
+| Column      | Type    | Attributes                | Allowed values                                             |
+| ----------- | ------- | ------------------------- | ---------------------------------------------------------- |
+| id          | INTEGER | PRIMARY KEY AUTOINCREMENT |                                                            |
+| owner_id    | INTEGER | FOREIGN KEY users(id)     |                                                            |
+| created_at  | INTEGER | NOT NULL                  | epoch timestamp                                            |
+| status      | TEXT    | NOT NULL                  | open, closed                                               |
+| category    | TEXT    | NOT NULL                  | administrative, inquiry, maintenance, new feature, payment |
+| title       | TEXT    | NOT NULL                  | 1-100 chars                                                |
+| description | TEXT    | NOT NULL                  | 1-1000 chars                                               |
+
+- Table `comments` - contains additional text blocks associated to tickets with 1-N relationship
+
+| Column    | Type    | Attributes                | Allowed values  |
+| --------- | ------- | ------------------------- | --------------- |
+| id        | INTEGER | PRIMARY KEY AUTOINCREMENT |                 |
+| ticket_id | INTEGER | FOREIGN KEY tickets(id)   |                 |
+| author_id | INTEGER | FOREIGN KEY users(id)     |                 |
+| posted_at | INTEGER | NOT NULL                  | epoch timestamp |
+| content   | TEXT    | NOT NULL                  | 1-1000 chars    |
 
 ## Main React Components
 
@@ -263,5 +302,10 @@ Most endpoints can generically reply with the following HTTP error codes, if no 
 
 ## Users Credentials
 
-- username, password (plus any other requested info which depends on the text)
-- username, password (plus any other requested info which depends on the text)
+| username | password | role  |
+| -------- | -------- | ----- |
+| admin1   | password | admin |
+| admin2   | password | admin |
+| user1    | password | user  |
+| user2    | password | user  |
+| user3    | password | user  |
