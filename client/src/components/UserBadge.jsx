@@ -10,10 +10,17 @@ function UserBadge() {
         <>
             {auth.logged && (
                 <Stack direction="row" alignItems="center" spacing={1}>
-                    <Typography level="title-sm" color="neutral">
+                    <Typography
+                        level="title-sm"
+                        color={auth.user.isAdmin ? 'danger' : 'neutral'}
+                    >
                         {auth.user.username}
                     </Typography>
-                    <Avatar size="sm" src={auth.user.avatar} />
+                    <Avatar
+                        size="sm"
+                        src={auth.user.avatar}
+                        color={auth.user.isAdmin ? 'danger' : 'neutral'}
+                    />
                 </Stack>
             )}
         </>
